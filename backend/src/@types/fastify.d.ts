@@ -282,9 +282,6 @@ declare module "fastify" {
       telemetry: TTelemetryServiceFactory;
       dynamicSecret: TDynamicSecretServiceFactory;
       dynamicSecretLease: TDynamicSecretLeaseServiceFactory;
-      projectUserAdditionalPrivilege: TProjectUserAdditionalPrivilegeServiceFactory;
-      identityProjectAdditionalPrivilege: TIdentityProjectAdditionalPrivilegeServiceFactory;
-      identityProjectAdditionalPrivilegeV2: TIdentityProjectAdditionalPrivilegeV2ServiceFactory;
       secretSharing: TSecretSharingServiceFactory;
       rateLimit: TRateLimitServiceFactory;
       userEngagement: TUserEngagementServiceFactory;

@@ -1,6 +1,6 @@
 import { ForbiddenError } from "@casl/ability";
 
-import { OrgMembershipStatus, TableName, TSamlConfigs, TSamlConfigsUpdate, TUsers } from "@app/db/schemas";
+import { AccessScope, OrgMembershipStatus, TableName, TSamlConfigs, TSamlConfigsUpdate, TUsers } from "@app/db/schemas";
 import { throwOnPlanSeatLimitReached } from "@app/ee/services/license/license-fns";
 import { getConfig } from "@app/lib/config/env";
 import { crypto } from "@app/lib/crypto";
@@ -11,9 +11,9 @@ import { TokenType } from "@app/services/auth-token/auth-token-types";
 import { TIdentityMetadataDALFactory } from "@app/services/identity/identity-metadata-dal";
 import { TKmsServiceFactory } from "@app/services/kms/kms-service";
 import { KmsDataKey } from "@app/services/kms/kms-types";
+import { TMembershipRoleDALFactory } from "@app/services/membership/membership-role-dal";
 import { TOrgDALFactory } from "@app/services/org/org-dal";
 import { getDefaultOrgMembershipRole } from "@app/services/org/org-role-fns";
-import { TOrgMembershipDALFactory } from "@app/services/org-membership/org-membership-dal";
 import { SmtpTemplates, TSmtpService } from "@app/services/smtp/smtp-service";
 import { getServerCfg } from "@app/services/super-admin/super-admin-service";
 import { LoginMethod } from "@app/services/super-admin/super-admin-types";
@@ -40,7 +40,7 @@ type TSamlConfigServiceFactoryDep = {
     "createMembership" | "updateMembershipById" | "findMembership" | "findOrgById" | "findOne" | "updateById"
   >;
   identityMetadataDAL: Pick<TIdentityMetadataDALFactory, "delete" | "insertMany" | "transaction">;
-  orgMembershipDAL: Pick<TOrgMembershipDALFactory, "create">;
+  membershipRoleDAL: Pick<TMembershipRoleDALFactory, "create">;
   permissionService: Pick<TPermissionServiceFactory, "getOrgPermission">;
   licenseService: Pick<TLicenseServiceFactory, "getPlan" | "updateSubscriptionOrgMemberCount">;
   tokenService: Pick<TAuthTokenServiceFactory, "createTokenForUser">;
@@ -51,7 +51,6 @@ type TSamlConfigServiceFactoryDep = {
 export const samlConfigServiceFactory = ({
   samlConfigDAL,
   orgDAL,
-  orgMembershipDAL,
   userDAL,
   userAliasDAL,
   permissionService,
@@ -59,7 +58,8 @@ export const samlConfigServiceFactory = ({
   tokenService,
   smtpService,
   identityMetadataDAL,
-  kmsService
+  kmsService,
+  membershipRoleDAL
 }: TSamlConfigServiceFactoryDep): TSamlConfigServiceFactory => {
   const createSamlCfg: TSamlConfigServiceFactory["createSamlCfg"] = async ({
     idpCert,
@@ -288,23 +288,31 @@ export const samlConfigServiceFactory = ({
         const foundUser = await userDAL.findById(userAlias.userId, tx);
         const [orgMembership] = await orgDAL.findMembership(
           {
-            [`${TableName.OrgMembership}.userId` as "userId"]: foundUser.id,
-            [`${TableName.OrgMembership}.orgId` as "id"]: orgId
+            [`${TableName.Membership}.actorUserId` as "actorUserId"]: userAlias.userId,
+            [`${TableName.Membership}.scopeOrgId` as "scopeOrgId"]: orgId,
+            [`${TableName.Membership}.scope` as "scope"]: AccessScope.Organization
           },
           { tx }
         );
+
         if (!orgMembership) {
           const { role, roleId } = await getDefaultOrgMembershipRole(organization.defaultMembershipRole);
 
-          await orgMembershipDAL.create(
+          const membership = await orgDAL.createMembership(
             {
-              userId: userAlias.userId,
-              inviteEmail: email,
-              orgId,
-              role,
-              roleId,
-              status: foundUser.isAccepted ? OrgMembershipStatus.Accepted : OrgMembershipStatus.Invited, // if user is fully completed, then set status to accepted, otherwise set it to invited so we can update it later
+              actorUserId: userAlias.userId,
+              scopeOrgId: orgId,
+              scope: AccessScope.Organization,
+              status: OrgMembershipStatus.Accepted,
               isActive: true
+            },
+            tx
+          );
+          await membershipRoleDAL.create(
+            {
+              membershipId: membership.id,
+              role,
+              customRoleId: roleId
             },
             tx
           );
@@ -377,8 +385,9 @@ export const samlConfigServiceFactory = ({
 
         const [orgMembership] = await orgDAL.findMembership(
           {
-            [`${TableName.OrgMembership}.userId` as "userId"]: newUser.id,
-            [`${TableName.OrgMembership}.orgId` as "id"]: orgId
+            [`${TableName.Membership}.actorUserId` as "actorUserId"]: userAlias.userId,
+            [`${TableName.Membership}.scopeOrgId` as "scopeOrgId"]: orgId,
+            [`${TableName.Membership}.scope` as "scope"]: AccessScope.Organization
           },
           { tx }
         );
@@ -388,15 +397,22 @@ export const samlConfigServiceFactory = ({
 
           const { role, roleId } = await getDefaultOrgMembershipRole(organization.defaultMembershipRole);
 
-          await orgMembershipDAL.create(
+          const membership = await orgDAL.createMembership(
             {
-              userId: newUser.id,
-              inviteEmail: email,
-              orgId,
-              role,
-              roleId,
+              actorUserId: newUser.id,
+              scopeOrgId: orgId,
+              scope: AccessScope.Organization,
               status: newUser.isAccepted ? OrgMembershipStatus.Accepted : OrgMembershipStatus.Invited, // if user is fully completed, then set status to accepted, otherwise set it to invited so we can update it later
-              isActive: true
+              isActive: true,
+              inviteEmail: email.toLowerCase()
+            },
+            tx
+          );
+          await membershipRoleDAL.create(
+            {
+              membershipId: membership.id,
+              role,
+              customRoleId: roleId
             },
             tx
           );
