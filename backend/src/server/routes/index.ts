@@ -50,9 +50,6 @@ import { hsmServiceFactory } from "@app/ee/services/hsm/hsm-service";
 import { HsmModule } from "@app/ee/services/hsm/hsm-types";
 import { identityAuthTemplateDALFactory } from "@app/ee/services/identity-auth-template/identity-auth-template-dal";
 import { identityAuthTemplateServiceFactory } from "@app/ee/services/identity-auth-template/identity-auth-template-service";
-import { identityProjectAdditionalPrivilegeDALFactory } from "@app/ee/services/identity-project-additional-privilege/identity-project-additional-privilege-dal";
-import { identityProjectAdditionalPrivilegeServiceFactory } from "@app/ee/services/identity-project-additional-privilege/identity-project-additional-privilege-service";
-import { identityProjectAdditionalPrivilegeV2ServiceFactory } from "@app/ee/services/identity-project-additional-privilege-v2/identity-project-additional-privilege-v2-service";
 import { kmipClientCertificateDALFactory } from "@app/ee/services/kmip/kmip-client-certificate-dal";
 import { kmipClientDALFactory } from "@app/ee/services/kmip/kmip-client-dal";
 import { kmipOperationServiceFactory } from "@app/ee/services/kmip/kmip-operation-service";
@@ -71,8 +68,6 @@ import { permissionServiceFactory } from "@app/ee/services/permission/permission
 import { pitServiceFactory } from "@app/ee/services/pit/pit-service";
 import { projectTemplateDALFactory } from "@app/ee/services/project-template/project-template-dal";
 import { projectTemplateServiceFactory } from "@app/ee/services/project-template/project-template-service";
-import { projectUserAdditionalPrivilegeDALFactory } from "@app/ee/services/project-user-additional-privilege/project-user-additional-privilege-dal";
-import { projectUserAdditionalPrivilegeServiceFactory } from "@app/ee/services/project-user-additional-privilege/project-user-additional-privilege-service";
 import { rateLimitDALFactory } from "@app/ee/services/rate-limit/rate-limit-dal";
 import { rateLimitServiceFactory } from "@app/ee/services/rate-limit/rate-limit-service";
 import { instanceRelayConfigDalFactory } from "@app/ee/services/relay/instance-relay-config-dal";
@@ -181,8 +176,6 @@ import { folderCommitChangesDALFactory } from "@app/services/folder-commit-chang
 import { folderTreeCheckpointDALFactory } from "@app/services/folder-tree-checkpoint/folder-tree-checkpoint-dal";
 import { folderTreeCheckpointResourcesDALFactory } from "@app/services/folder-tree-checkpoint-resources/folder-tree-checkpoint-resources-dal";
 import { groupProjectDALFactory } from "@app/services/group-project/group-project-dal";
-import { groupProjectMembershipRoleDALFactory } from "@app/services/group-project/group-project-membership-role-dal";
-import { groupProjectServiceFactory } from "@app/services/group-project/group-project-service";
 import { identityDALFactory } from "@app/services/identity/identity-dal";
 import { identityMetadataDALFactory } from "@app/services/identity/identity-metadata-dal";
 import { identityOrgDALFactory } from "@app/services/identity/identity-org-dal";
@@ -208,8 +201,6 @@ import { identityOciAuthServiceFactory } from "@app/services/identity-oci-auth/i
 import { identityOidcAuthDALFactory } from "@app/services/identity-oidc-auth/identity-oidc-auth-dal";
 import { identityOidcAuthServiceFactory } from "@app/services/identity-oidc-auth/identity-oidc-auth-service";
 import { identityProjectDALFactory } from "@app/services/identity-project/identity-project-dal";
-import { identityProjectMembershipRoleDALFactory } from "@app/services/identity-project/identity-project-membership-role-dal";
-import { identityProjectServiceFactory } from "@app/services/identity-project/identity-project-service";
 import { identityTlsCertAuthDALFactory } from "@app/services/identity-tls-cert-auth/identity-tls-cert-auth-dal";
 import { identityTlsCertAuthServiceFactory } from "@app/services/identity-tls-cert-auth/identity-tls-cert-auth-service";
 import { identityTokenAuthDALFactory } from "@app/services/identity-token-auth/identity-token-auth-dal";
@@ -244,7 +235,6 @@ import { offlineUsageReportServiceFactory } from "@app/services/offline-usage-re
 import { incidentContactDALFactory } from "@app/services/org/incident-contacts-dal";
 import { orgBotDALFactory } from "@app/services/org/org-bot-dal";
 import { orgDALFactory } from "@app/services/org/org-dal";
-import { orgRoleServiceFactory } from "@app/services/org/org-role-service";
 import { orgServiceFactory } from "@app/services/org/org-service";
 import { orgAdminServiceFactory } from "@app/services/org-admin/org-admin-service";
 import { orgMembershipDALFactory } from "@app/services/org-membership/org-membership-dal";
@@ -275,9 +265,6 @@ import { projectKeyDALFactory } from "@app/services/project-key/project-key-dal"
 import { projectKeyServiceFactory } from "@app/services/project-key/project-key-service";
 import { projectMembershipDALFactory } from "@app/services/project-membership/project-membership-dal";
 import { projectMembershipServiceFactory } from "@app/services/project-membership/project-membership-service";
-import { projectUserMembershipRoleDALFactory } from "@app/services/project-membership/project-user-membership-role-dal";
-import { projectRoleDALFactory } from "@app/services/project-role/project-role-dal";
-import { projectRoleServiceFactory } from "@app/services/project-role/project-role-service";
 import { reminderDALFactory } from "@app/services/reminder/reminder-dal";
 import { dailyReminderQueueServiceFactory } from "@app/services/reminder/reminder-queue";
 import { reminderServiceFactory } from "@app/services/reminder/reminder-service";
@@ -344,6 +331,9 @@ import { initializeOauthConfigSync } from "./v1/sso-router";
 import { registerV2Routes } from "./v2";
 import { registerV3Routes } from "./v3";
 import { registerV4Routes } from "./v4";
+import { groupProjectServiceFactory } from "@app/services/group-project/group-project-service";
+import { identityProjectServiceFactory } from "@app/services/identity-project/identity-project-service";
+import { convertorServiceFactory } from "@app/services/convertor/convertor-service";
 
 const histogram = monitorEventLoopDelay({ resolution: 20 });
 histogram.enable();
@@ -390,9 +380,6 @@ export const registerRoutes = async (
   const projectDAL = projectDALFactory(db);
   const projectSshConfigDAL = projectSshConfigDALFactory(db);
   const projectMembershipDAL = projectMembershipDALFactory(db);
-  const projectUserAdditionalPrivilegeDAL = projectUserAdditionalPrivilegeDALFactory(db);
-  const projectUserMembershipRoleDAL = projectUserMembershipRoleDALFactory(db);
-  const projectRoleDAL = projectRoleDALFactory(db);
   const projectEnvDAL = projectEnvDALFactory(db);
   const projectKeyDAL = projectKeyDALFactory(db);
   const projectBotDAL = projectBotDALFactory(db);
@@ -424,8 +411,6 @@ export const registerRoutes = async (
   const identityAccessTokenDAL = identityAccessTokenDALFactory(db);
   const identityOrgMembershipDAL = identityOrgDALFactory(db);
   const identityProjectDAL = identityProjectDALFactory(db);
-  const identityProjectMembershipRoleDAL = identityProjectMembershipRoleDALFactory(db);
-  const identityProjectAdditionalPrivilegeDAL = identityProjectAdditionalPrivilegeDALFactory(db);
   const identityAuthTemplateDAL = identityAuthTemplateDALFactory(db);
 
   const identityTokenAuthDAL = identityTokenAuthDALFactory(db);
@@ -483,7 +468,6 @@ export const registerRoutes = async (
   const gitAppOrgDAL = gitAppDALFactory(db);
   const groupDAL = groupDALFactory(db);
   const groupProjectDAL = groupProjectDALFactory(db);
-  const groupProjectMembershipRoleDAL = groupProjectMembershipRoleDALFactory(db);
   const userGroupMembershipDAL = userGroupMembershipDALFactory(db);
   const secretScanningDAL = secretScanningDALFactory(db);
   const secretSharingDAL = secretSharingDALFactory(db);
@@ -592,7 +576,10 @@ export const registerRoutes = async (
 
   const roleService = roleServiceFactory({
     permissionService,
-    roleDAL
+    roleDAL,
+    projectDAL,
+    identityDAL,
+    userDAL
   });
   const additionalPrivilegeService = additionalPrivilegeServiceFactory({
     additionalPrivilegeDAL,
@@ -666,25 +653,24 @@ export const registerRoutes = async (
     userDAL,
     secretApprovalRequestDAL
   });
-  const tokenService = tokenServiceFactory({ tokenDAL: authTokenDAL, userDAL, orgMembershipDAL });
+  const tokenService = tokenServiceFactory({ tokenDAL: authTokenDAL, userDAL, membershipUserDAL });
 
   const samlService = samlConfigServiceFactory({
     identityMetadataDAL,
     permissionService,
     orgDAL,
-    orgMembershipDAL,
     userDAL,
     userAliasDAL,
     samlConfigDAL,
     licenseService,
     tokenService,
     smtpService,
-    kmsService
+    kmsService,
+    membershipRoleDAL
   });
   const groupService = groupServiceFactory({
     userDAL,
     groupDAL,
-    groupProjectDAL,
     orgDAL,
     userGroupMembershipDAL,
     projectDAL,
@@ -692,17 +678,13 @@ export const registerRoutes = async (
     projectKeyDAL,
     permissionService,
     licenseService,
-    oidcConfigDAL
+    oidcConfigDAL,
+    membershipGroupDAL,
+    membershipRoleDAL
   });
   const groupProjectService = groupProjectServiceFactory({
     groupDAL,
-    groupProjectDAL,
-    groupProjectMembershipRoleDAL,
-    userGroupMembershipDAL,
     projectDAL,
-    projectKeyDAL,
-    projectBotDAL,
-    projectRoleDAL,
     permissionService
   });
 
@@ -747,18 +729,18 @@ export const registerRoutes = async (
     userDAL,
     userAliasDAL,
     orgDAL,
-    orgMembershipDAL,
     projectDAL,
-    projectUserAdditionalPrivilegeDAL,
     projectMembershipDAL,
-    groupDAL,
-    groupProjectDAL,
     userGroupMembershipDAL,
     projectKeyDAL,
     projectBotDAL,
     permissionService,
     smtpService,
-    externalGroupOrgRoleMappingDAL
+    externalGroupOrgRoleMappingDAL,
+    groupDAL,
+    membershipGroupDAL,
+    membershipRoleDAL,
+    membershipUserDAL
   });
 
   const githubOrgSyncConfigService = githubOrgSyncServiceFactory({
@@ -775,9 +757,7 @@ export const registerRoutes = async (
     ldapConfigDAL,
     ldapGroupMapDAL,
     orgDAL,
-    orgMembershipDAL,
     groupDAL,
-    groupProjectDAL,
     projectKeyDAL,
     projectDAL,
     projectBotDAL,
@@ -788,7 +768,9 @@ export const registerRoutes = async (
     licenseService,
     tokenService,
     smtpService,
-    kmsService
+    kmsService,
+    membershipGroupDAL,
+    membershipRoleDAL
   });
 
   const telemetryService = telemetryServiceFactory({
@@ -810,13 +792,12 @@ export const registerRoutes = async (
   const userService = userServiceFactory({
     userDAL,
     orgDAL,
-    orgMembershipDAL,
     tokenService,
     permissionService,
     groupProjectDAL,
     smtpService,
-    projectMembershipDAL,
-    userAliasDAL
+    userAliasDAL,
+    membershipUserDAL
   });
 
   const totpService = totpServiceFactory({
@@ -831,9 +812,10 @@ export const registerRoutes = async (
     tokenService,
     orgDAL,
     totpService,
-    orgMembershipDAL,
     auditLogService,
-    notificationService
+    notificationService,
+    membershipRoleDAL,
+    membershipUserDAL
   });
   const passwordService = authPaswordServiceFactory({
     tokenService,
@@ -862,14 +844,10 @@ export const registerRoutes = async (
     folderDAL,
     licenseService,
     samlConfigDAL,
-    orgRoleDAL,
     permissionService,
     orgDAL,
     incidentContactDAL,
     tokenService,
-    projectUserAdditionalPrivilegeDAL,
-    projectUserMembershipRoleDAL,
-    projectRoleDAL,
     projectDAL,
     projectMembershipDAL,
     orgMembershipDAL,
@@ -882,7 +860,10 @@ export const registerRoutes = async (
     ldapConfigDAL,
     loginService,
     projectBotService,
-    reminderService
+    reminderService,
+    membershipRoleDAL,
+    membershipUserDAL,
+    roleDAL
   });
   const signupService = authSignupServiceFactory({
     tokenService,
@@ -893,18 +874,10 @@ export const registerRoutes = async (
     projectKeyDAL,
     projectDAL,
     projectBotDAL,
-    groupProjectDAL,
-    projectMembershipDAL,
-    projectUserMembershipRoleDAL,
     orgDAL,
     orgService,
-    licenseService
-  });
-  const orgRoleService = orgRoleServiceFactory({
-    permissionService,
-    orgRoleDAL,
-    orgDAL,
-    externalGroupOrgRoleMappingDAL
+    licenseService,
+    membershipGroupDAL
   });
 
   const microsoftTeamsService = microsoftTeamsServiceFactory({
@@ -921,8 +894,6 @@ export const registerRoutes = async (
     userAliasDAL,
     identityTokenAuthDAL,
     identityAccessTokenDAL,
-    orgMembershipDAL,
-    identityOrgMembershipDAL,
     authService: loginService,
     serverCfgDAL: superAdminDAL,
     kmsRootConfigDAL,
@@ -934,7 +905,10 @@ export const registerRoutes = async (
     microsoftTeamsService,
     invalidateCacheQueue,
     smtpService,
-    tokenService
+    tokenService,
+    membershipIdentityDAL,
+    membershipRoleDAL,
+    membershipUserDAL
   });
 
   const offlineUsageReportService = offlineUsageReportServiceFactory({
@@ -946,9 +920,10 @@ export const registerRoutes = async (
     smtpService,
     projectDAL,
     permissionService,
-    projectUserMembershipRoleDAL,
-    projectMembershipDAL,
-    notificationService
+    notificationService,
+    membershipRoleDAL,
+    membershipUserDAL,
+    projectMembershipDAL
   });
 
   const rateLimitService = rateLimitServiceFactory({
@@ -974,32 +949,24 @@ export const registerRoutes = async (
 
   const projectMembershipService = projectMembershipServiceFactory({
     projectMembershipDAL,
-    projectUserMembershipRoleDAL,
     projectDAL,
     permissionService,
-    projectBotDAL,
     orgDAL,
     userDAL,
-    projectUserAdditionalPrivilegeDAL,
     userGroupMembershipDAL,
     smtpService,
     projectKeyDAL,
-    projectRoleDAL,
     groupProjectDAL,
     secretReminderRecipientsDAL,
     licenseService,
-    notificationService
+    notificationService,
+    membershipDAL
   });
-  const projectUserAdditionalPrivilegeService = projectUserAdditionalPrivilegeServiceFactory({
-    permissionService,
-    projectMembershipDAL,
-    projectUserAdditionalPrivilegeDAL,
-    accessApprovalRequestDAL
-  });
+
   const projectKeyService = projectKeyServiceFactory({
     permissionService,
     projectKeyDAL,
-    projectMembershipDAL
+    membershipUserDAL
   });
 
   const projectQueueService = projectQueueFactory({
@@ -1015,10 +982,10 @@ export const registerRoutes = async (
     secretVersionDAL,
     projectKeyDAL,
     projectBotDAL,
-    projectMembershipDAL,
     secretApprovalRequestDAL,
     secretApprovalSecretDAL: secretApprovalRequestSecretDAL,
-    projectUserMembershipRoleDAL
+    membershipRoleDAL,
+    membershipUserDAL
   });
 
   const certificateAuthorityDAL = certificateAuthorityDALFactory(db);
@@ -1230,14 +1197,15 @@ export const registerRoutes = async (
     snapshotSecretV2BridgeDAL,
     secretApprovalRequestDAL,
     projectKeyDAL,
-    projectUserMembershipRoleDAL,
     orgService,
     resourceMetadataDAL,
     folderCommitService,
     secretSyncQueue,
     reminderService,
     eventBusService,
-    licenseService
+    licenseService,
+    membershipRoleDAL,
+    membershipUserDAL
   });
 
   const projectService = projectServiceFactory({
@@ -1248,13 +1216,10 @@ export const registerRoutes = async (
     secretV2BridgeDAL,
     projectQueue: projectQueueService,
     projectBotService,
-    identityProjectDAL,
-    identityOrgMembershipDAL,
     userDAL,
     projectEnvDAL,
     orgDAL,
     projectMembershipDAL,
-    projectRoleDAL,
     folderDAL,
     licenseService,
     pkiSubscriberDAL,
@@ -1268,8 +1233,6 @@ export const registerRoutes = async (
     sshCertificateTemplateDAL,
     sshHostDAL,
     sshHostGroupDAL,
-    projectUserMembershipRoleDAL,
-    identityProjectMembershipRoleDAL,
     keyStore,
     kmsService,
     certificateTemplateDAL,
@@ -1278,7 +1241,6 @@ export const registerRoutes = async (
     projectMicrosoftTeamsConfigDAL,
     microsoftTeamsIntegrationDAL,
     projectTemplateService,
-    groupProjectDAL,
     smtpService,
     reminderService,
     notificationService
@@ -1293,16 +1255,6 @@ export const registerRoutes = async (
     folderDAL,
     accessApprovalPolicyEnvironmentDAL,
     secretApprovalPolicyEnvironmentDAL: sapEnvironmentDAL
-  });
-
-  const projectRoleService = projectRoleServiceFactory({
-    permissionService,
-    projectRoleDAL,
-    projectUserMembershipRoleDAL,
-    identityProjectMembershipRoleDAL,
-    projectDAL,
-    identityDAL,
-    userDAL
   });
 
   const snapshotService = secretSnapshotServiceFactory({
@@ -1459,21 +1411,16 @@ export const registerRoutes = async (
     groupDAL,
     permissionService,
     projectEnvDAL,
-    projectMembershipDAL,
     projectDAL,
     userDAL,
     accessApprovalRequestDAL,
-    additionalPrivilegeDAL: projectUserAdditionalPrivilegeDAL,
-    accessApprovalRequestReviewerDAL,
-    orgMembershipDAL
+    accessApprovalRequestReviewerDAL
   });
 
   const accessApprovalRequestService = accessApprovalRequestServiceFactory({
     projectDAL,
     permissionService,
     accessApprovalRequestReviewerDAL,
-    additionalPrivilegeDAL: projectUserAdditionalPrivilegeDAL,
-    projectMembershipDAL,
     accessApprovalPolicyDAL,
     accessApprovalRequestDAL,
     projectEnvDAL,
@@ -1575,7 +1522,14 @@ export const registerRoutes = async (
     licenseService,
     identityMetadataDAL,
     keyStore,
-    orgDAL
+    orgDAL,
+    membershipIdentityDAL,
+    membershipRoleDAL
+  });
+  const identityProjectService = identityProjectServiceFactory({
+    identityProjectDAL,
+    membershipIdentityDAL,
+    permissionService
   });
 
   const identityAuthTemplateService = identityAuthTemplateServiceFactory({
@@ -1594,53 +1548,28 @@ export const registerRoutes = async (
     identityDAL
   });
 
-  const identityProjectService = identityProjectServiceFactory({
-    permissionService,
-    projectDAL,
-    identityProjectDAL,
-    identityOrgMembershipDAL,
-    identityProjectMembershipRoleDAL,
-    projectRoleDAL,
-    orgDAL
-  });
-
-  const identityProjectAdditionalPrivilegeService = identityProjectAdditionalPrivilegeServiceFactory({
-    projectDAL,
-    identityProjectAdditionalPrivilegeDAL,
-    permissionService,
-    identityProjectDAL
-  });
-
-  const identityProjectAdditionalPrivilegeV2Service = identityProjectAdditionalPrivilegeV2ServiceFactory({
-    projectDAL,
-    identityProjectAdditionalPrivilegeDAL,
-    permissionService,
-    identityProjectDAL
-  });
-
   const identityTokenAuthService = identityTokenAuthServiceFactory({
     identityTokenAuthDAL,
-    identityOrgMembershipDAL,
     identityAccessTokenDAL,
     permissionService,
     licenseService,
-    orgDAL
+    orgDAL,
+    membershipIdentityDAL
   });
 
   const identityUaService = identityUaServiceFactory({
-    identityOrgMembershipDAL,
     permissionService,
     identityAccessTokenDAL,
     identityUaClientSecretDAL,
     identityUaDAL,
     licenseService,
     keyStore,
-    orgDAL
+    orgDAL,
+    membershipIdentityDAL
   });
 
   const identityKubernetesAuthService = identityKubernetesAuthServiceFactory({
     identityKubernetesAuthDAL,
-    identityOrgMembershipDAL,
     identityAccessTokenDAL,
     permissionService,
     licenseService,
@@ -1649,61 +1578,62 @@ export const registerRoutes = async (
     gatewayV2Service,
     gatewayV2DAL,
     gatewayDAL,
-    kmsService
+    kmsService,
+    membershipIdentityDAL
   });
   const identityGcpAuthService = identityGcpAuthServiceFactory({
     identityGcpAuthDAL,
     orgDAL,
-    identityOrgMembershipDAL,
     identityAccessTokenDAL,
     permissionService,
-    licenseService
+    licenseService,
+    membershipIdentityDAL
   });
 
   const identityAliCloudAuthService = identityAliCloudAuthServiceFactory({
     identityAccessTokenDAL,
     orgDAL,
     identityAliCloudAuthDAL,
-    identityOrgMembershipDAL,
     licenseService,
-    permissionService
+    permissionService,
+    membershipIdentityDAL
   });
 
   const identityTlsCertAuthService = identityTlsCertAuthServiceFactory({
     identityAccessTokenDAL,
     orgDAL,
     identityTlsCertAuthDAL,
-    identityOrgMembershipDAL,
     licenseService,
     permissionService,
-    kmsService
+    kmsService,
+    membershipIdentityDAL
   });
 
   const identityAwsAuthService = identityAwsAuthServiceFactory({
     identityAccessTokenDAL,
     orgDAL,
     identityAwsAuthDAL,
-    identityOrgMembershipDAL,
     licenseService,
-    permissionService
+    permissionService,
+    membershipIdentityDAL
   });
 
   const identityAzureAuthService = identityAzureAuthServiceFactory({
     identityAzureAuthDAL,
     orgDAL,
-    identityOrgMembershipDAL,
     identityAccessTokenDAL,
     permissionService,
-    licenseService
+    licenseService,
+    membershipIdentityDAL
   });
 
   const identityOciAuthService = identityOciAuthServiceFactory({
     identityAccessTokenDAL,
     orgDAL,
     identityOciAuthDAL,
-    identityOrgMembershipDAL,
     licenseService,
-    permissionService
+    permissionService,
+    membershipIdentityDAL
   });
 
   const pitService = pitServiceFactory({
@@ -1723,11 +1653,11 @@ export const registerRoutes = async (
   const identityOidcAuthService = identityOidcAuthServiceFactory({
     identityOidcAuthDAL,
     orgDAL,
-    identityOrgMembershipDAL,
     identityAccessTokenDAL,
     permissionService,
     licenseService,
-    kmsService
+    kmsService,
+    membershipIdentityDAL
   });
 
   const identityJwtAuthService = identityJwtAuthServiceFactory({
@@ -1735,9 +1665,9 @@ export const registerRoutes = async (
     orgDAL,
     permissionService,
     identityAccessTokenDAL,
-    identityOrgMembershipDAL,
     licenseService,
-    kmsService
+    kmsService,
+    membershipIdentityDAL
   });
 
   const identityLdapAuthService = identityLdapAuthServiceFactory({
@@ -1746,11 +1676,17 @@ export const registerRoutes = async (
     permissionService,
     kmsService,
     identityAccessTokenDAL,
-    identityOrgMembershipDAL,
     licenseService,
     identityDAL,
     identityAuthTemplateDAL,
-    keyStore
+    keyStore,
+    membershipIdentityDAL
+  });
+
+  const convertorService = convertorServiceFactory({
+    additionalPrivilegeDAL,
+    membershipDAL,
+    projectDAL
   });
 
   const dynamicSecretProviders = buildDynamicSecretProviders({
@@ -1825,7 +1761,6 @@ export const registerRoutes = async (
 
   const oidcService = oidcConfigServiceFactory({
     orgDAL,
-    orgMembershipDAL,
     userDAL,
     userAliasDAL,
     licenseService,
@@ -1838,9 +1773,10 @@ export const registerRoutes = async (
     projectKeyDAL,
     projectDAL,
     userGroupMembershipDAL,
-    groupProjectDAL,
     groupDAL,
-    auditLogService
+    auditLogService,
+    membershipGroupDAL,
+    membershipRoleDAL
   });
 
   const userEngagementService = userEngagementServiceFactory({
@@ -1896,8 +1832,8 @@ export const registerRoutes = async (
   const externalGroupOrgRoleMappingService = externalGroupOrgRoleMappingServiceFactory({
     permissionService,
     licenseService,
-    orgRoleDAL,
-    externalGroupOrgRoleMappingDAL
+    externalGroupOrgRoleMappingDAL,
+    roleDAL
   });
 
   const appConnectionService = appConnectionServiceFactory({
@@ -2203,7 +2139,6 @@ export const registerRoutes = async (
     groupProject: groupProjectService,
     permission: permissionService,
     org: orgService,
-    orgRole: orgRoleService,
     oidc: oidcService,
     apiKey: apiKeyService,
     authToken: tokenService,
@@ -2213,7 +2148,6 @@ export const registerRoutes = async (
     projectMembership: projectMembershipService,
     projectKey: projectKeyService,
     projectEnv: projectEnvService,
-    projectRole: projectRoleService,
     secret: secretService,
     secretReplication: secretReplicationService,
     secretTag: secretTagService,
@@ -2228,7 +2162,6 @@ export const registerRoutes = async (
     identity: identityService,
     identityAuthTemplate: identityAuthTemplateService,
     identityAccessToken: identityAccessTokenService,
-    identityProject: identityProjectService,
     identityTokenAuth: identityTokenAuthService,
     identityUa: identityUaService,
     identityKubernetesAuth: identityKubernetesAuthService,
@@ -2275,9 +2208,6 @@ export const registerRoutes = async (
     scim: scimService,
     secretBlindIndex: secretBlindIndexService,
     telemetry: telemetryService,
-    projectUserAdditionalPrivilege: projectUserAdditionalPrivilegeService,
-    identityProjectAdditionalPrivilege: identityProjectAdditionalPrivilegeService,
-    identityProjectAdditionalPrivilegeV2: identityProjectAdditionalPrivilegeV2Service,
     secretSharing: secretSharingService,
     userEngagement: userEngagementService,
     externalKms: externalKmsService,
@@ -2307,12 +2237,13 @@ export const registerRoutes = async (
     bus: eventBusService,
     sse: sseService,
     notification: notificationService,
-
     membershipUser: membershipUserService,
     membershipIdentity: membershipIdentityService,
     membershipGroup: membershipGroupService,
     role: roleService,
-    additionalPrivilege: additionalPrivilegeService
+    additionalPrivilege: additionalPrivilegeService,
+    identityProject: identityProjectService,
+    convertor: convertorService
   });
 
   const cronJobs: CronJob[] = [];
